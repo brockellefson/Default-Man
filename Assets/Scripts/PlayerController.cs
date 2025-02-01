@@ -3,14 +3,14 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
-
-    Vector2 moveInput;
-    Rigidbody2D rb;
-    Animator animator;
-    TouchingDirections touchingDirections;
-    public float walkSpeed = 5f;
-    public float runSpeed = 8f;
-    public float jumpImpulse = 8f;
+    public PlayerData Data;
+    public Vector2 moveInput;
+    public Rigidbody2D rb;
+    public Animator animator;
+    public TouchingDirections touchingDirections;
+    public float walkSpeed = 7f;
+    public float runSpeed = 12f;
+    public float jumpImpulse = 12f;
 
     public float CurrentMoveSpeed{ 
         get {
