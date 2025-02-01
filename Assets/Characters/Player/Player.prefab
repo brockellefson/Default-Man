@@ -139,7 +139,7 @@ MonoBehaviour:
   touchingDirections: {fileID: 0}
   walkSpeed: 7
   runSpeed: 12
-  jumpImpulse: 12
+  jumpImpulse: 15
 --- !u!114 &5350017568187621353
 MonoBehaviour:
   m_ObjectHideFlags: 0
