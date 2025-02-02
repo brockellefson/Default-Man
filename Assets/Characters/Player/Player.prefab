@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 8230766844419148520}
   - component: {fileID: 1919218843217313048}
   - component: {fileID: 3857019981182598471}
+  - component: {fileID: 1800472012885037414}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -108,7 +109,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 3
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -132,14 +133,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 769b1aa9e995e4b018680b2ed0fdbc39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Data: {fileID: 0}
-  moveInput: {x: 0, y: 0}
-  rb: {fileID: 0}
+  Data: {fileID: 11400000, guid: e6de6150ab38ff74b9ee0fa32028adf7, type: 2}
+  RB: {fileID: 0}
   animator: {fileID: 0}
-  touchingDirections: {fileID: 0}
-  walkSpeed: 7
-  runSpeed: 12
-  jumpImpulse: 15
+  collider: {fileID: 0}
+  moveInput: {x: 0, y: 0}
 --- !u!114 &5350017568187621353
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -382,3 +380,21 @@ MonoBehaviour:
   groundDistance: 0.05
   ceilingDistance: 0
   wallDistance: 0.05
+--- !u!114 &1800472012885037414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 299455667710951860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a6fd04b5f3f04a62b000bba21bc6658, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startedJumping: 0
+  isRunning: 0
+  isMoving: 0
+  isGrounded: 1
+  isOnWall: 0
+  isOnCeiling: 0

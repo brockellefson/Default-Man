@@ -1,17 +1,17 @@
 using Unity.VisualScripting.Dependencies.NCalc;
 using UnityEngine;
 
-public class TouchingDirections : MonoBehaviour
+public class PlayerCollider : MonoBehaviour
 {
-    Rigidbody2D rb;
     Collider2D touchingCollider;
-    Animator animator;
+    PlayerAnimator animator;
     RaycastHit2D[] groundHits = new RaycastHit2D[5];
     RaycastHit2D[] wallHits = new RaycastHit2D[5];
     RaycastHit2D[] ceilingHits = new RaycastHit2D[5];
     private bool _isGrounded = true;
     private bool _isOnWall;
     private bool _isOnCeiling;
+
     private Vector2 wallCheckDirection => gameObject.transform.localScale.x > 0 ? Vector2.right : Vector2.left;
     public ContactFilter2D castFilter;
     public float groundDistance = 0.05f;
@@ -26,7 +26,7 @@ public class TouchingDirections : MonoBehaviour
         private set
         {
             _isGrounded = value;
-            animator.SetBool(AnimationStrings.isGrounded, value);
+            animator.isGrounded = value;
         }
     }
 
@@ -39,7 +39,7 @@ public class TouchingDirections : MonoBehaviour
         private set
         {
             _isOnWall = value;
-            animator.SetBool(AnimationStrings.isOnWall, value);
+            animator.isOnWall = value;
         }
     }
 
@@ -52,15 +52,18 @@ public class TouchingDirections : MonoBehaviour
         private set
         {
             _isOnCeiling = value;
-            animator.SetBool(AnimationStrings.isOnCeiling, value);
+            animator.isOnCeiling = value;
         }
     }
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
         touchingCollider = GetComponent<CapsuleCollider2D>();
-        animator = GetComponent<Animator>();
+        animator = GetComponent<PlayerAnimator>();
+    }
+
+    private void Update(){
+
     }
 
     void FixedUpdate()

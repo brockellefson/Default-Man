@@ -1,35 +1,22 @@
 using System;
+using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     public PlayerData Data;
+    public Rigidbody2D RB;
+    public PlayerAnimator animator;
+    public PlayerCollider collider;
     public Vector2 moveInput;
-    public Rigidbody2D rb;
-    public Animator animator;
-    public TouchingDirections touchingDirections;
-    public float walkSpeed = 7f;
-    public float runSpeed = 12f;
-    public float jumpImpulse = 12f;
 
-    public float CurrentMoveSpeed{ 
-        get {
-            if(IsMoving && !touchingDirections.isOnWall){
-                if(IsRunning){
-                    return runSpeed;
-                }
-
-                return walkSpeed;
-            }
-
-            return 0;
-        }
-    }
     public bool IsMoving { 
-        get { return _isMoving;}
+        get { return _isMoving; }
         private set {
             _isMoving = value;
-            animator.SetBool(AnimationStrings.isMoving, value);
+            animator.isMoving = value;
         }
     }
 
@@ -37,7 +24,7 @@ public class PlayerController : MonoBehaviour
         get { return _isRunning;}
         private set {
             _isRunning = value;
-            animator.SetBool(AnimationStrings.IsRunning, value);
+            animator.isRunning = value;
         }
     }
 
@@ -52,19 +39,31 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public bool IsJumping = false;
     private bool _isMoving = false;
     private bool _isRunning = false;
     private bool _isFacingRight = true;
 
     void Awake(){
-        rb = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
-        touchingDirections = GetComponent<TouchingDirections>();
+        RB = GetComponent<Rigidbody2D>();
+        animator = GetComponent<PlayerAnimator>();
+        collider = GetComponent<PlayerCollider>();
+    }
+
+    private void Start(){
+    }
+
+    private void Update(){
     }
 
     void FixedUpdate(){
-        rb.linearVelocity = new Vector2(moveInput.x * CurrentMoveSpeed, rb.linearVelocityY);
-        animator.SetFloat(AnimationStrings.yVelocity, rb.linearVelocityY);
+        if(collider.isGrounded){
+            IsJumping = false;
+        }
+
+        Run(1);
+        SetGravity();
+
     }
 
     public void OnMove(InputAction.CallbackContext context) 
@@ -74,21 +73,9 @@ public class PlayerController : MonoBehaviour
         SetDirection(moveInput);
     }
 
-    private void SetDirection(Vector2 moveInput)
-    {
-        if(moveInput.x > 0 && !isFacingRight)
-        {
-            isFacingRight = true;
-        }
-        else if(moveInput.x < 0 && isFacingRight)
-        {
-            isFacingRight = false;
-        }
-    }
-
     public void OnRun(InputAction.CallbackContext context) 
     {
-        if(context.started)
+        if(context.started && IsMoving)
         {
             IsRunning = true;
         }
@@ -100,10 +87,72 @@ public class PlayerController : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context) 
     {
-        if(context.started && touchingDirections.isGrounded)
+        if(context.started && collider.isGrounded)
         {
-            animator.SetTrigger(AnimationStrings.jump);
-            rb.linearVelocity = new Vector2(rb.linearVelocityX, jumpImpulse);
+            animator.startedJumping = true;
+            IsJumping = true;
+            RB.linearVelocity = new Vector2(RB.linearVelocityX, Data.jumpForce);
         }
+    }
+    private void SetDirection(Vector2 moveInput)
+    {
+        if(moveInput.x > 0 && !isFacingRight)
+        {
+            isFacingRight = true;
+        }
+        else if(moveInput.x < 0 && isFacingRight)
+        {
+            isFacingRight = false;
+        }
+    }
+    private void SetGravityScale(float scale)
+	{
+		RB.gravityScale = scale;
+	}
+
+    private void Run(float lerpAmount)
+	{
+		float targetSpeed = moveInput.x * Data.runMaxSpeed;
+		targetSpeed = Mathf.Lerp(RB.linearVelocityX, targetSpeed, lerpAmount);
+        if(IsRunning){
+            targetSpeed = targetSpeed * (float) 1.3;
+        }
+        
+        float accelRate;
+
+		if (collider.isGrounded)
+			accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? Data.runAccelAmount : Data.runDeccelAmount;
+		else
+			accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? Data.runAccelAmount * Data.accelInAir : Data.runDeccelAmount * Data.deccelInAir;
+
+        if(IsJumping && Mathf.Abs(RB.linearVelocityY) < Data.jumpHangTimeThreshold){
+			accelRate *= Data.jumpHangAccelerationMult;
+			targetSpeed *= Data.jumpHangMaxSpeedMult;  
+        }
+
+		float speedDif = targetSpeed - RB.linearVelocityX;
+		float movement = speedDif * accelRate;
+		RB.AddForce(movement * Vector2.right, ForceMode2D.Force);
+	}
+    public void SetGravity(){
+        if (RB.linearVelocityY < 0 && moveInput.y < 0)
+        {
+            SetGravityScale(Data.gravityScale * Data.fastFallGravityMult);
+            RB.linearVelocity = new Vector2(RB.linearVelocityX, Mathf.Max(RB.linearVelocityY, -Data.maxFastFallSpeed));
+        }
+        else if(IsJumping && Mathf.Abs(RB.linearVelocityY) < Data.jumpHangTimeThreshold){
+				SetGravityScale(Data.gravityScale * Data.jumpHangGravityMult);
+        }
+        else if(RB.linearVelocityY < 0){
+            SetGravityScale(Data.gravityScale * Data.fallGravityMult);
+            RB.linearVelocity = new Vector2(RB.linearVelocityX, Mathf.Max(RB.linearVelocityY, -Data.maxFallSpeed));
+
+        }
+		else
+		{
+			SetGravityScale(Data.gravityScale);
+		}
+
+        animator.SetYVelocity(RB.linearVelocityY);
     }
 }
