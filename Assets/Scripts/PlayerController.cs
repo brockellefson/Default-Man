@@ -240,6 +240,6 @@ public class PlayerController : MonoBehaviour
 
     public bool CanJump()
     {
-        return coyoteTimeCounter > 0f && jumpBufferCounter > 0f;
+        return coyoteTimeCounter > 0f && jumpBufferCounter > 0f && !IsSliding;
     }
 }
