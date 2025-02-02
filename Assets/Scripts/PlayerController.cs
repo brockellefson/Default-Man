@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -12,23 +13,48 @@ public class PlayerController : MonoBehaviour
     public PlayerCollider collider;
     public Vector2 moveInput;
 
-    public bool IsMoving { 
+    public bool IsMoving 
+    { 
         get { return _isMoving; }
-        private set {
+        private set 
+        {
             _isMoving = value;
             animator.isMoving = value;
         }
     }
 
-    public bool IsRunning { 
+    public bool IsRunning 
+    { 
         get { return _isRunning;}
-        private set {
+        private set 
+        {
             _isRunning = value;
             animator.isRunning = value;
         }
     }
 
-    public bool isFacingRight { 
+    public bool IsCrouching 
+    { 
+        get { return _isCrouching;}
+        private set 
+        {
+            _isCrouching = value;
+            animator.isCrouching = value;
+        }
+    }
+
+    public bool IsSliding 
+    { 
+        get { return _isSliding;}
+        private set 
+        {
+            _isSliding = value;
+            animator.isSliding = value;
+        }
+    }
+
+    public bool isFacingRight
+    { 
         get { return _isFacingRight;}
         private set {
             if(_isFacingRight != value){
@@ -42,21 +68,26 @@ public class PlayerController : MonoBehaviour
     public bool IsJumping = false;
     private bool _isMoving = false;
     private bool _isRunning = false;
+    private bool _isCrouching = false;
+    private bool _isSliding = false;
     private bool _isFacingRight = true;
 
     private float coyoteTimeCounter;
     private float jumpBufferCounter;
 
-    void Awake(){
+    void Awake()
+    {
         RB = GetComponent<Rigidbody2D>();
         animator = GetComponent<PlayerAnimator>();
         collider = GetComponent<PlayerCollider>();
     }
 
-    private void Start(){
+    private void Start()
+    {
     }
 
-    private void Update(){
+    private void Update()
+    {
         jumpBufferCounter -= Time.deltaTime;
 
         if(collider.isGrounded){
@@ -76,7 +107,8 @@ public class PlayerController : MonoBehaviour
 		}
     }
 
-    void FixedUpdate(){
+    void FixedUpdate()
+    {
         Run(1);
         SetGravity();
     }
@@ -90,7 +122,7 @@ public class PlayerController : MonoBehaviour
 
     public void OnRun(InputAction.CallbackContext context) 
     {
-        if(context.started && IsMoving)
+        if(context.started && IsMoving && !IsCrouching)
         {
             IsRunning = true;
         }
@@ -111,6 +143,24 @@ public class PlayerController : MonoBehaviour
             coyoteTimeCounter = 0;
         }
     }
+
+    public void OnCrouch(InputAction.CallbackContext context) 
+    {
+        if(context.started && collider.isGrounded)
+        {
+            if(IsRunning){
+                IsSliding = true;
+            }
+            else{
+                IsCrouching = true;
+            }
+        }
+        else if(context.canceled){
+            IsCrouching = false;
+            IsSliding = false;
+        }
+    }
+
     private void SetDirection(Vector2 moveInput)
     {
         if(moveInput.x > 0 && !isFacingRight)
@@ -122,44 +172,14 @@ public class PlayerController : MonoBehaviour
             isFacingRight = false;
         }
     }
+
     private void SetGravityScale(float scale)
 	{
 		RB.gravityScale = scale;
 	}
 
-    private void Run(float lerpAmount)
-	{
-		float targetSpeed = moveInput.x * Data.runMaxSpeed;
-		targetSpeed = Mathf.Lerp(RB.linearVelocityX, targetSpeed, lerpAmount);
-        if(IsRunning){
-            targetSpeed = targetSpeed * (float) 1.3;
-        }
-        
-        float accelRate;
-
-		if (collider.isGrounded)
-			accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? Data.runAccelAmount : Data.runDeccelAmount;
-		else
-			accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? Data.runAccelAmount * Data.accelInAir : Data.runDeccelAmount * Data.deccelInAir;
-
-        if(IsJumping && Mathf.Abs(RB.linearVelocityY) < Data.jumpHangTimeThreshold){
-			accelRate *= Data.jumpHangAccelerationMult;
-			targetSpeed *= Data.jumpHangMaxSpeedMult;  
-        }
-
-		float speedDif = targetSpeed - RB.linearVelocityX;
-		float movement = speedDif * accelRate;
-		RB.AddForce(movement * Vector2.right, ForceMode2D.Force);
-	}
-
-    public void Jump(){
-        animator.startedJumping = true;
-        IsJumping = true;
-        RB.linearVelocity = new Vector2(RB.linearVelocityX, Data.jumpForce);  
-        jumpBufferCounter = 0;
-    }
-
-    public void SetGravity(){
+    public void SetGravity()
+    {
         if (RB.linearVelocityY < 0 && moveInput.y < 0)
         {
             SetGravityScale(Data.gravityScale * Data.fastFallGravityMult);
@@ -180,7 +200,46 @@ public class PlayerController : MonoBehaviour
         animator.SetYVelocity(RB.linearVelocityY);
     }
 
-    public bool CanJump(){
+    private void Run(float lerpAmount)
+	{
+		float targetSpeed = moveInput.x * Data.runMaxSpeed;
+		targetSpeed = Mathf.Lerp(RB.linearVelocityX, targetSpeed, lerpAmount);
+        if(IsRunning){
+            targetSpeed *= (float) 1.3;
+        }
+        
+        float accelRate;
+
+		if (collider.isGrounded)
+			accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? Data.runAccelAmount : Data.runDeccelAmount;
+		else
+			accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? Data.runAccelAmount * Data.accelInAir : Data.runDeccelAmount * Data.deccelInAir;
+
+        if(IsJumping && Mathf.Abs(RB.linearVelocityY) < Data.jumpHangTimeThreshold){
+			accelRate *= Data.jumpHangAccelerationMult;
+			targetSpeed *= Data.jumpHangMaxSpeedMult;  
+        }
+
+		float speedDif = targetSpeed - RB.linearVelocityX;
+		float movement = speedDif * accelRate;
+
+        if(IsCrouching){
+            movement = movement/2;
+        }
+
+		RB.AddForce(movement * Vector2.right, ForceMode2D.Force);
+	}
+
+    public void Jump()
+    {
+        animator.startedJumping = true;
+        IsJumping = true;
+        RB.linearVelocity = new Vector2(RB.linearVelocityX, Data.jumpForce);  
+        jumpBufferCounter = 0;
+    }
+
+    public bool CanJump()
+    {
         return coyoteTimeCounter > 0f && jumpBufferCounter > 0f;
     }
 }
