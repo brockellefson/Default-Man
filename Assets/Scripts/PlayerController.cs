@@ -54,16 +54,14 @@ public class PlayerController : MonoBehaviour
     }
 
     private void Update(){
-    }
-
-    void FixedUpdate(){
         if(collider.isGrounded){
             IsJumping = false;
         }
+    }
 
+    void FixedUpdate(){
         Run(1);
         SetGravity();
-
     }
 
     public void OnMove(InputAction.CallbackContext context) 
