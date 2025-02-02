@@ -45,6 +45,7 @@ public class PlayerController : MonoBehaviour
     private bool _isFacingRight = true;
 
     private float coyoteTimeCounter;
+    private float jumpBufferCounter;
 
     void Awake(){
         RB = GetComponent<Rigidbody2D>();
@@ -56,13 +57,23 @@ public class PlayerController : MonoBehaviour
     }
 
     private void Update(){
+        jumpBufferCounter -= Time.deltaTime;
+
         if(collider.isGrounded){
-            IsJumping = false;
             coyoteTimeCounter = Data.coyoteTime;
         }
         else{
             coyoteTimeCounter -= Time.deltaTime;
         }
+
+        if(CanJump()){
+            Jump();
+        }
+
+		if (IsJumping && RB.linearVelocityY < 0)
+		{
+			IsJumping = false;
+		}
     }
 
     void FixedUpdate(){
@@ -91,13 +102,11 @@ public class PlayerController : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context) 
     {
-        if(context.started && CanJump())
+        if(context.started)
         {
-            animator.startedJumping = true;
-            IsJumping = true;
-            RB.linearVelocity = new Vector2(RB.linearVelocityX, Data.jumpForce);
+            jumpBufferCounter = Data.jumpInputBufferTime;
         }
-        if(context.canceled && RB.linearVelocityY > 0){
+        else if(context.canceled && RB.linearVelocityY > 0){
             RB.linearVelocity = new Vector2(RB.linearVelocityX, RB.linearVelocityY * .5f);
             coyoteTimeCounter = 0;
         }
@@ -143,6 +152,13 @@ public class PlayerController : MonoBehaviour
 		RB.AddForce(movement * Vector2.right, ForceMode2D.Force);
 	}
 
+    public void Jump(){
+        animator.startedJumping = true;
+        IsJumping = true;
+        RB.linearVelocity = new Vector2(RB.linearVelocityX, Data.jumpForce);  
+        jumpBufferCounter = 0;
+    }
+
     public void SetGravity(){
         if (RB.linearVelocityY < 0 && moveInput.y < 0)
         {
@@ -155,7 +171,6 @@ public class PlayerController : MonoBehaviour
         else if(RB.linearVelocityY < 0){
             SetGravityScale(Data.gravityScale * Data.fallGravityMult);
             RB.linearVelocity = new Vector2(RB.linearVelocityX, Mathf.Max(RB.linearVelocityY, -Data.maxFallSpeed));
-
         }
 		else
 		{
@@ -166,6 +181,6 @@ public class PlayerController : MonoBehaviour
     }
 
     public bool CanJump(){
-        return coyoteTimeCounter > 0f;
+        return coyoteTimeCounter > 0f && jumpBufferCounter > 0f;
     }
 }
