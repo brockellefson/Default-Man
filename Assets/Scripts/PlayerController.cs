@@ -91,6 +91,9 @@ public class PlayerController : MonoBehaviour
             IsJumping = true;
             RB.linearVelocity = new Vector2(RB.linearVelocityX, Data.jumpForce);
         }
+        if(context.canceled && RB.linearVelocityY > 0){
+            RB.linearVelocity = new Vector2(RB.linearVelocityX, RB.linearVelocityY * .5f);
+        }
     }
     private void SetDirection(Vector2 moveInput)
     {
@@ -132,6 +135,7 @@ public class PlayerController : MonoBehaviour
 		float movement = speedDif * accelRate;
 		RB.AddForce(movement * Vector2.right, ForceMode2D.Force);
 	}
+
     public void SetGravity(){
         if (RB.linearVelocityY < 0 && moveInput.y < 0)
         {
