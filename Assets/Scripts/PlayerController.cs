@@ -44,6 +44,8 @@ public class PlayerController : MonoBehaviour
     private bool _isRunning = false;
     private bool _isFacingRight = true;
 
+    private float coyoteTimeCounter;
+
     void Awake(){
         RB = GetComponent<Rigidbody2D>();
         animator = GetComponent<PlayerAnimator>();
@@ -56,6 +58,10 @@ public class PlayerController : MonoBehaviour
     private void Update(){
         if(collider.isGrounded){
             IsJumping = false;
+            coyoteTimeCounter = Data.coyoteTime;
+        }
+        else{
+            coyoteTimeCounter -= Time.deltaTime;
         }
     }
 
@@ -85,7 +91,7 @@ public class PlayerController : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context) 
     {
-        if(context.started && collider.isGrounded)
+        if(context.started && CanJump())
         {
             animator.startedJumping = true;
             IsJumping = true;
@@ -93,6 +99,7 @@ public class PlayerController : MonoBehaviour
         }
         if(context.canceled && RB.linearVelocityY > 0){
             RB.linearVelocity = new Vector2(RB.linearVelocityX, RB.linearVelocityY * .5f);
+            coyoteTimeCounter = 0;
         }
     }
     private void SetDirection(Vector2 moveInput)
@@ -156,5 +163,9 @@ public class PlayerController : MonoBehaviour
 		}
 
         animator.SetYVelocity(RB.linearVelocityY);
+    }
+
+    public bool CanJump(){
+        return coyoteTimeCounter > 0f;
     }
 }
