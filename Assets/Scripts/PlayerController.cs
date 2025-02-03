@@ -205,35 +205,53 @@ public class PlayerController : MonoBehaviour
         animator.SetYVelocity(RB.linearVelocityY);
     }
 
-    private void Run(float lerpAmount)
-	{
-		float targetSpeed = moveInput.x * Data.runMaxSpeed;
-		targetSpeed = Mathf.Lerp(RB.linearVelocityX, targetSpeed, lerpAmount);
-        if(IsRunning){
-            targetSpeed *= (float) 1.3;
-        }
-        
-        float accelRate;
+private void Run(float lerpAmount)
+{
+    if(moveInput.x == 0 && !IsRunning){
+            RB.linearVelocity = new Vector2(0, RB.linearVelocityY);
+            return;
+    }
 
-		if (playerCollider.isGrounded)
-			accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? Data.runAccelAmount : Data.runDeccelAmount;
-		else
-			accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? Data.runAccelAmount * Data.accelInAir : Data.runDeccelAmount * Data.deccelInAir;
+    // Calculate the target speed based on input and max speed
+    float targetSpeed = moveInput.x * Data.runMaxSpeed;
 
-        if(IsJumping && Mathf.Abs(RB.linearVelocityY) < Data.jumpHangTimeThreshold){
-			accelRate *= Data.jumpHangAccelerationMult;
-			targetSpeed *= Data.jumpHangMaxSpeedMult;  
-        }
+    // Lerp towards the target speed
+    targetSpeed = Mathf.Lerp(RB.linearVelocityX, targetSpeed, lerpAmount);
 
-		float speedDif = targetSpeed - RB.linearVelocityX;
-		float movement = speedDif * accelRate;
+    // Apply speed boost if running
+    if (IsRunning)
+    {
+        targetSpeed *= 1.3f;
+    }
 
-        if(IsCrouching){
-            movement = movement/2;
-        }
+    // Determine acceleration rate based on grounded or air state
+    float accelRate;
+    accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? Data.runAccelAmount : Data.runDeccelAmount;
 
-		RB.AddForce(movement * Vector2.right, ForceMode2D.Force);
-	}
+    // Apply jump hang modifiers if applicable
+    if (IsJumping && Mathf.Abs(RB.linearVelocityY) < Data.jumpHangTimeThreshold)
+    {
+        accelRate *= Data.jumpHangAccelerationMult;
+        targetSpeed *= Data.jumpHangMaxSpeedMult;
+    }
+
+    // Calculate speed difference and simulate force-based acceleration
+    float speedDif = targetSpeed - RB.linearVelocityX;
+
+    // Convert acceleration to match how AddForce works (Force = Mass * Acceleration)
+    float accelerationForce = speedDif * accelRate;
+    float movement = accelerationForce / RB.mass * Time.fixedDeltaTime;
+    float finalSpeed = RB.linearVelocityX + movement;
+    // Apply crouching modifier
+    if (IsCrouching)
+    {
+        finalSpeed *= .7f;
+    }
+
+    // Update the Rigidbody's velocity
+    RB.linearVelocity = new Vector2(finalSpeed, RB.linearVelocityY);
+}
+
 
     public void Jump()
     {
