@@ -3,11 +3,13 @@ using UnityEngine;
 
 public class PlayerCollider : MonoBehaviour
 {
-    Collider2D touchingCollider;
+    Collider2D currentCollider;
     PlayerAnimator animator;
     RaycastHit2D[] groundHits = new RaycastHit2D[5];
     RaycastHit2D[] wallHits = new RaycastHit2D[5];
     RaycastHit2D[] ceilingHits = new RaycastHit2D[5];
+    public CapsuleCollider2D standingCollider;
+    public CircleCollider2D crouchingCollider;
     private bool _isGrounded = true;
     private bool _isOnWall;
     private bool _isOnCeiling;
@@ -58,8 +60,21 @@ public class PlayerCollider : MonoBehaviour
 
     void Awake()
     {
-        touchingCollider = GetComponent<CapsuleCollider2D>();
+        currentCollider = crouchingCollider;
         animator = GetComponent<PlayerAnimator>();
+    }
+
+    public void IsCrouchingOrRolling(bool crouching){
+        if(crouching){
+            crouchingCollider.enabled = true;
+            currentCollider = crouchingCollider;
+            standingCollider.enabled = false;
+        }
+        else{
+            standingCollider.enabled = true;
+            currentCollider = standingCollider;
+            crouchingCollider.enabled = false;
+        }
     }
 
     private void Update(){
@@ -68,8 +83,8 @@ public class PlayerCollider : MonoBehaviour
 
     void FixedUpdate()
     {
-        isGrounded = touchingCollider.Cast(Vector2.down, castFilter, groundHits, groundDistance) > 0;
-        isOnWall = touchingCollider.Cast(wallCheckDirection, castFilter, wallHits, wallDistance) > 0;
-        isOnCeiling = touchingCollider.Cast(Vector2.up, castFilter, ceilingHits, ceilingDistance) > 0;
+        isGrounded = currentCollider.Cast(Vector2.down, castFilter, groundHits, groundDistance) > 0;
+        isOnWall = currentCollider.Cast(wallCheckDirection, castFilter, wallHits, wallDistance) > 0;
+        isOnCeiling = currentCollider.Cast(Vector2.up, castFilter, ceilingHits, ceilingDistance) > 0;
     }
 }

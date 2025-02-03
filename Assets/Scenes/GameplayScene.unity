@@ -17362,6 +17362,52 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cam: {fileID: 519420031}
   followTarget: {fileID: 1104181104}
+--- !u!1 &1448165116 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 299455667710951860, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
+  m_PrefabInstance: {fileID: 8711341412208704673}
+  m_PrefabAsset: {fileID: 0}
+--- !u!70 &1448165118 stripped
+CapsuleCollider2D:
+  m_CorrespondingSourceObject: {fileID: 1919218843217313048, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
+  m_PrefabInstance: {fileID: 8711341412208704673}
+  m_PrefabAsset: {fileID: 0}
+--- !u!58 &1448165125
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1448165116}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: -2.1003118}
+  m_Radius: 0.60766643
 --- !u!1 &1642074227
 GameObject:
   m_ObjectHideFlags: 0
@@ -17818,6 +17864,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1919218843217313048, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3857019981182598471, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
+      propertyPath: standingCollider
+      value: 
+      objectReference: {fileID: 1448165118}
+    - target: {fileID: 3857019981182598471, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
+      propertyPath: crouchingCollider
+      value: 
+      objectReference: {fileID: 1448165125}
     - target: {fileID: 8230766844419148520, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
       propertyPath: m_Controller
       value: 
@@ -17825,7 +17883,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 299455667710951860, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1448165125}
   m_SourcePrefab: {fileID: 100100000, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

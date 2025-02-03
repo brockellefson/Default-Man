@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour
     public PlayerData Data;
     public Rigidbody2D RB;
     public PlayerAnimator animator;
-    public PlayerCollider collider;
+    public PlayerCollider playerCollider;
     public Vector2 moveInput;
 
     public bool IsMoving 
@@ -74,12 +74,13 @@ public class PlayerController : MonoBehaviour
 
     private float coyoteTimeCounter;
     private float jumpBufferCounter;
+    private float crouchBufferCounter;
 
     void Awake()
     {
         RB = GetComponent<Rigidbody2D>();
         animator = GetComponent<PlayerAnimator>();
-        collider = GetComponent<PlayerCollider>();
+        playerCollider = GetComponent<PlayerCollider>();
     }
 
     private void Start()
@@ -88,13 +89,19 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        playerCollider.IsCrouchingOrRolling(IsCrouching || IsSliding);
         jumpBufferCounter -= Time.deltaTime;
 
-        if(collider.isGrounded){
+        if(playerCollider.isGrounded){
             coyoteTimeCounter = Data.coyoteTime;
         }
         else{
             coyoteTimeCounter -= Time.deltaTime;
+        }
+
+        if(CanRollOrCrouch())
+        {
+            CrouchOrRoll();
         }
 
         if(CanJump()){
@@ -116,7 +123,7 @@ public class PlayerController : MonoBehaviour
     public void OnMove(InputAction.CallbackContext context) 
     {
         moveInput = context.ReadValue<Vector2>();
-        IsMoving = moveInput != Vector2.zero;
+        IsMoving = moveInput.x != 0f;
         SetDirection(moveInput);
     }
 
@@ -146,15 +153,10 @@ public class PlayerController : MonoBehaviour
 
     public void OnCrouch(InputAction.CallbackContext context) 
     {
-        if(context.started && collider.isGrounded)
+        if(context.started)
         {
-            if(IsRunning){
-                IsSliding = true;
-            }
-            else{
-                IsCrouching = true;
-            }
-        }
+            crouchBufferCounter = Data.crouchInputBufferTime;
+        }        
         else if(context.canceled){
             IsCrouching = false;
             IsSliding = false;
@@ -210,7 +212,7 @@ public class PlayerController : MonoBehaviour
         
         float accelRate;
 
-		if (collider.isGrounded)
+		if (playerCollider.isGrounded)
 			accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? Data.runAccelAmount : Data.runDeccelAmount;
 		else
 			accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? Data.runAccelAmount * Data.accelInAir : Data.runDeccelAmount * Data.deccelInAir;
@@ -238,8 +240,24 @@ public class PlayerController : MonoBehaviour
         jumpBufferCounter = 0;
     }
 
+    public void CrouchOrRoll()
+    {
+        if(IsRunning){
+                IsSliding = true;
+            }
+            else{
+                IsCrouching = true;
+            }
+
+            crouchBufferCounter = 0;
+    }
+
     public bool CanJump()
     {
         return coyoteTimeCounter > 0f && jumpBufferCounter > 0f && !IsSliding;
+    }
+
+    public bool CanRollOrCrouch(){
+        return crouchBufferCounter > 0f;
     }
 }
