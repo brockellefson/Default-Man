@@ -136,6 +136,9 @@ public class PlayerController : MonoBehaviour
         else if(context.canceled)
         {
             IsRunning = false;
+            if(IsSliding){
+                IsSliding = false;
+            }
         }
     }
 
