@@ -17262,7 +17262,7 @@ MonoBehaviour:
   m_Intensity: 1
   m_LightVolumeIntensity: 1
   m_LightVolumeEnabled: 0
-  m_ApplyToSortingLayers: 00000000b79b23d1
+  m_ApplyToSortingLayers: 00000000b79b23d1b3424e89
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -17507,11 +17507,11 @@ MonoBehaviour:
       Offset: {x: 0, y: 0}
   CenterOnActivate: 1
   TargetOffset: {x: 0, y: 0, z: 0}
-  Damping: {x: 1, y: 1, z: 1}
+  Damping: {x: 0.05, y: 1, z: 1}
   Lookahead:
     Enabled: 1
-    Time: 0.336
-    Smoothing: 0
+    Time: 0.524
+    Smoothing: 11.48
     IgnoreY: 1
 --- !u!114 &1728034361
 MonoBehaviour:
@@ -17870,10 +17870,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 319278464291968586, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1919218843217313048, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
-      propertyPath: m_IsTrigger
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8230766844419148520, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}

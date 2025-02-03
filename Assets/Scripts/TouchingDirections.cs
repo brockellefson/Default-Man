@@ -17,7 +17,7 @@ public class PlayerCollider : MonoBehaviour
     private Vector2 wallCheckDirection => gameObject.transform.localScale.x > 0 ? Vector2.right : Vector2.left;
     public ContactFilter2D castFilter;
     public float groundDistance = 0.05f;
-    public float ceilingDistance = 0f;
+    public float ceilingDistance = 0.15f;
     public float wallDistance = 0.05f;
     public bool isGrounded 
     {
@@ -60,7 +60,7 @@ public class PlayerCollider : MonoBehaviour
 
     void Awake()
     {
-        currentCollider = crouchingCollider;
+        currentCollider = standingCollider;
         animator = GetComponent<PlayerAnimator>();
     }
 

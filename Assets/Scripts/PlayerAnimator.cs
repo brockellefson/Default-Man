@@ -9,15 +9,15 @@ public class PlayerAnimator : MonoBehaviour
     public bool isCrouching = false;
     public bool isSliding = false;
     public bool isGrounded = true;
-    public bool isOnWall;
-    public bool isOnCeiling;
+    public bool isOnWall = false;
+    public bool isOnCeiling = false;
 
     void Start()
     {
         animator = GetComponent<Animator>();   
     }
 
-    void LateUpdate()
+    void Update()
     {
         CheckAnimationState();
     }

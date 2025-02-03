@@ -89,7 +89,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        playerCollider.IsCrouchingOrRolling(IsCrouching || IsSliding);
+        playerCollider.IsCrouchingOrRolling((IsCrouching || IsSliding) && playerCollider.isGrounded);
         jumpBufferCounter -= Time.deltaTime;
 
         if(playerCollider.isGrounded){
@@ -99,7 +99,7 @@ public class PlayerController : MonoBehaviour
             coyoteTimeCounter -= Time.deltaTime;
         }
 
-        if(CanRollOrCrouch())
+        if(CanRollOrCrouch() && playerCollider.isGrounded)
         {
             CrouchOrRoll();
         }
@@ -248,9 +248,9 @@ public class PlayerController : MonoBehaviour
         if(IsRunning){
                 IsSliding = true;
             }
-            else{
-                IsCrouching = true;
-            }
+        else{
+            IsCrouching = true;
+        }
 
             crouchBufferCounter = 0;
     }
