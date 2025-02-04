@@ -84,7 +84,46 @@ public class PlayerCollider : MonoBehaviour
     void FixedUpdate()
     {
         isGrounded = currentCollider.Cast(Vector2.down, castFilter, groundHits, groundDistance) > 0;
-        isOnWall = currentCollider.Cast(wallCheckDirection, castFilter, wallHits, wallDistance) > 0;
-        isOnCeiling = currentCollider.Cast(Vector2.up, castFilter, ceilingHits, ceilingDistance) > 0;
+        isOnWall = false;//currentCollider.Cast(wallCheckDirection, castFilter, wallHits, wallDistance) > 0;
+        isOnCeiling = false;//currentCollider.Cast(Vector2.up, castFilter, ceilingHits, ceilingDistance) > 0;
     }
+
+    // [Header("GroundCheck")]
+    // public Transform groundCheckPos;
+    // public Vector2 groundCheckSize = new Vector2(0.49f, 0.03f);
+    // public LayerMask groundLayer;
+    // [Header("WallCheck")]
+    // public Transform wallCheckPos;
+    // public Vector2 wallCheckSize = new Vector2(0.49f, 0.03f);
+    // public LayerMask wallLayer;
+    // [Header("CeilingCheck")]
+    // public Transform ceilingCheckPos;
+    // public Vector2 ceilingCheckSize = new Vector2(0.49f, 0.03f);
+    // public LayerMask ceilingLayer;
+
+    // void FixedUpdate()
+    // {
+    //     isGrounded = TouchingGround();
+    //     isOnWall = TouchingWall();
+    //     isOnCeiling = TouchingCeiling();
+    // }
+
+    // private bool TouchingGround(){
+    //     return Physics2D.OverlapBox(groundCheckPos.position, groundCheckSize, 0, layer);
+    // }
+    // private bool TouchingWall(){
+    //     return Physics2D.OverlapBox(wallCheckPos.position, wallCheckSize, 0, layer);
+    // }
+    // private bool TouchingCeiling(){
+    //     return Physics2D.OverlapBox(ceilingCheckPos.position, ceilingCheckSize, 0, layer);
+    // }
+
+    // private void OnDrawGizmosSelected(){
+    //     Gizmos.color = Color.white;
+    //     Gizmos.DrawWireCube(groundCheckPos.position, groundCheckSize);
+    //     Gizmos.color = Color.red;
+    //     Gizmos.DrawWireCube(wallCheckPos.position, wallCheckSize);
+    //     Gizmos.color = Color.red;
+    //     Gizmos.DrawWireCube(ceilingCheckPos.position, ceilingCheckSize);
+    // }
 }

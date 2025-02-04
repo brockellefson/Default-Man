@@ -133,7 +133,7 @@ GameObject:
   - component: {fileID: 141553614}
   - component: {fileID: 141553613}
   - component: {fileID: 141553612}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -17841,7 +17841,7 @@ MonoBehaviour:
   TargetOffset: {x: 0, y: 0, z: 0}
   Damping: {x: 0.05, y: 1, z: 1}
   Lookahead:
-    Enabled: 1
+    Enabled: 0
     Time: 0.15
     Smoothing: 4.06
     IgnoreY: 1
@@ -18015,7 +18015,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1961674789}
   - component: {fileID: 1961674788}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Grid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -18203,6 +18203,10 @@ PrefabInstance:
     - target: {fileID: 319278464291968586, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3857019981182598471, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
+      propertyPath: layer.m_Bits
+      value: 64
       objectReference: {fileID: 0}
     - target: {fileID: 8230766844419148520, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
       propertyPath: m_Enabled

@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using Unity.Mathematics;
 using Unity.VisualScripting;
+using Unity.VisualScripting.Antlr3.Runtime.Tree;
 using UnityEngine;
 using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.InputSystem;
@@ -58,6 +59,9 @@ public class PlayerController : MonoBehaviour
         get { return _isFacingRight;}
         private set {
             if(_isFacingRight != value){
+                if(IsRunning && !IsSliding){
+
+                }
                 transform.localScale *= new Vector2(-1,1);
             }
 
@@ -168,6 +172,10 @@ public class PlayerController : MonoBehaviour
 
     private void SetDirection(Vector2 moveInput)
     {
+        if(IsSliding){
+            return;
+        }
+
         if(moveInput.x > 0 && !isFacingRight)
         {
             isFacingRight = true;
@@ -207,9 +215,8 @@ public class PlayerController : MonoBehaviour
 
 private void Run(float lerpAmount)
 {
-    if(moveInput.x == 0 && !IsRunning){
-            RB.linearVelocity = new Vector2(0, RB.linearVelocityY);
-            return;
+    if(IsSliding){
+        return;
     }
 
     // Calculate the target speed based on input and max speed
