@@ -3,22 +3,33 @@ using UnityEngine;
 
 public class PlayerCollider : MonoBehaviour
 {
-    Collider2D currentCollider;
+    public CapsuleCollider2D standingHitbox;
+    public CircleCollider2D crouchingHitbox;
+    public LayerMask tileLayer;
+    
+    [Header("GroundCheck")]
+    public Transform groundCheckPos;
+    public Vector2 groundCheckSize = new Vector2(0.49f, 0.03f);
+    [Header("WallCheck")]
+    public Transform wallCheckPos;
+    public Vector2 wallCheckSize = new Vector2(0.49f, 0.03f);
+        [Header("CrouchingWallCheck")]
+    public Transform crouchingWallCheckPos;
+    public Vector2 crouchingWallCheckSize = new Vector2(0.49f, 0.03f);
+    [Header("CeilingCheck")]
+    public Transform ceilingCheckPos;
+    public Vector2 ceilingCheckSize = new Vector2(0.49f, 0.03f);
+    [Header("CrouchingCeilingCheck")]
+    public Transform crouchingceilingCheckPos;
+    public Vector2 crouchingceilingCheckSize = new Vector2(0.49f, 0.03f);
+    
     PlayerAnimator animator;
-    RaycastHit2D[] groundHits = new RaycastHit2D[5];
-    RaycastHit2D[] wallHits = new RaycastHit2D[5];
-    RaycastHit2D[] ceilingHits = new RaycastHit2D[5];
-    public CapsuleCollider2D standingCollider;
-    public CircleCollider2D crouchingCollider;
     private bool _isGrounded = true;
     private bool _isOnWall;
     private bool _isOnCeiling;
-
-    private Vector2 wallCheckDirection => gameObject.transform.localScale.x > 0 ? Vector2.right : Vector2.left;
+    private bool _isCrouching = false;
     public ContactFilter2D castFilter;
-    public float groundDistance = 0.05f;
-    public float ceilingDistance = 0.15f;
-    public float wallDistance = 0.05f;
+
     public bool isGrounded 
     {
         get 
@@ -60,70 +71,52 @@ public class PlayerCollider : MonoBehaviour
 
     void Awake()
     {
-        currentCollider = standingCollider;
         animator = GetComponent<PlayerAnimator>();
     }
 
     public void IsCrouchingOrRolling(bool crouching){
+        _isCrouching = crouching;
         if(crouching){
-            crouchingCollider.enabled = true;
-            currentCollider = crouchingCollider;
-            standingCollider.enabled = false;
+            crouchingHitbox.enabled = true;
+            standingHitbox.enabled = false;
         }
         else{
-            standingCollider.enabled = true;
-            currentCollider = standingCollider;
-            crouchingCollider.enabled = false;
+            standingHitbox.enabled = true;
+            crouchingHitbox.enabled = false;
         }
-    }
-
-    private void Update(){
-
     }
 
     void FixedUpdate()
     {
-        isGrounded = currentCollider.Cast(Vector2.down, castFilter, groundHits, groundDistance) > 0;
-        isOnWall = false;//currentCollider.Cast(wallCheckDirection, castFilter, wallHits, wallDistance) > 0;
-        isOnCeiling = false;//currentCollider.Cast(Vector2.up, castFilter, ceilingHits, ceilingDistance) > 0;
+        isGrounded = TouchingGround();
+        isOnWall = _isCrouching ? TouchingWallWhileCrouching() : TouchingWall();
+        isOnCeiling = _isCrouching ? TouchingCeilingWhileCrouching() : TouchingCeiling();
     }
 
-    // [Header("GroundCheck")]
-    // public Transform groundCheckPos;
-    // public Vector2 groundCheckSize = new Vector2(0.49f, 0.03f);
-    // public LayerMask groundLayer;
-    // [Header("WallCheck")]
-    // public Transform wallCheckPos;
-    // public Vector2 wallCheckSize = new Vector2(0.49f, 0.03f);
-    // public LayerMask wallLayer;
-    // [Header("CeilingCheck")]
-    // public Transform ceilingCheckPos;
-    // public Vector2 ceilingCheckSize = new Vector2(0.49f, 0.03f);
-    // public LayerMask ceilingLayer;
+    private bool TouchingGround(){
+        return Physics2D.OverlapBox(groundCheckPos.position, groundCheckSize, 0, tileLayer);
+    }
+    private bool TouchingWall(){
+        return Physics2D.OverlapBox(wallCheckPos.position, wallCheckSize, 0, tileLayer);
+    }
+    private bool TouchingWallWhileCrouching(){
+        return Physics2D.OverlapBox(crouchingWallCheckPos.position, crouchingceilingCheckSize, 0, tileLayer);
+    }
+    private bool TouchingCeiling(){
+        return Physics2D.OverlapBox(ceilingCheckPos.position, ceilingCheckSize, 0, tileLayer);
+    }
+    private bool TouchingCeilingWhileCrouching(){
+        return Physics2D.OverlapBox(crouchingceilingCheckPos.position, crouchingceilingCheckSize, 0, tileLayer);
+    }
 
-    // void FixedUpdate()
-    // {
-    //     isGrounded = TouchingGround();
-    //     isOnWall = TouchingWall();
-    //     isOnCeiling = TouchingCeiling();
-    // }
-
-    // private bool TouchingGround(){
-    //     return Physics2D.OverlapBox(groundCheckPos.position, groundCheckSize, 0, layer);
-    // }
-    // private bool TouchingWall(){
-    //     return Physics2D.OverlapBox(wallCheckPos.position, wallCheckSize, 0, layer);
-    // }
-    // private bool TouchingCeiling(){
-    //     return Physics2D.OverlapBox(ceilingCheckPos.position, ceilingCheckSize, 0, layer);
-    // }
-
-    // private void OnDrawGizmosSelected(){
-    //     Gizmos.color = Color.white;
-    //     Gizmos.DrawWireCube(groundCheckPos.position, groundCheckSize);
-    //     Gizmos.color = Color.red;
-    //     Gizmos.DrawWireCube(wallCheckPos.position, wallCheckSize);
-    //     Gizmos.color = Color.red;
-    //     Gizmos.DrawWireCube(ceilingCheckPos.position, ceilingCheckSize);
-    // }
+    private void OnDrawGizmosSelected(){
+        Gizmos.color = Color.white;
+        Gizmos.DrawCube(groundCheckPos.position, groundCheckSize);
+        Gizmos.color = Color.red;
+        Gizmos.DrawCube(wallCheckPos.position, wallCheckSize);
+        Gizmos.color = Color.black;
+        Gizmos.DrawCube(ceilingCheckPos.position, ceilingCheckSize);
+        Gizmos.DrawCube(crouchingWallCheckPos.position, crouchingWallCheckSize);
+        Gizmos.DrawCube(crouchingceilingCheckPos.position, crouchingceilingCheckSize);
+    }
 }

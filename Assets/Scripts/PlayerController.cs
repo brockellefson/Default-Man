@@ -219,6 +219,11 @@ private void Run(float lerpAmount)
         return;
     }
 
+    if(moveInput.x == 0 && !IsRunning){
+            RB.linearVelocity = new Vector2(0, RB.linearVelocityY);
+            return;
+    }
+
     // Calculate the target speed based on input and max speed
     float targetSpeed = moveInput.x * Data.runMaxSpeed;
 
