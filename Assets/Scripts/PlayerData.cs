@@ -23,11 +23,15 @@ public class PlayerData : ScriptableObject
 	[HideInInspector] public float runAccelAmount; //The actual force (multiplied with speedDiff) applied to the player.
 	public float runDecceleration; //The speed at which our player decelerates from their current speed, can be set to runMaxSpeed for instant deceleration down to 0 for none at all
 	[HideInInspector] public float runDeccelAmount; //Actual force (multiplied with speedDiff) applied to the player .
+	[Range(1f, 2)]public float sprintAccel;
+	public float maxSprintSpeed;
+
 	[Space(5)]
 	[Range(0f, 1)] public float accelInAir; //Multipliers applied to acceleration rate when airborne.
 	[Range(0f, 1)] public float deccelInAir;
 	[Space(5)]
 	public bool doConserveMomentum = true;
+
 
 	[Space(20)]
 
@@ -91,6 +95,8 @@ public class PlayerData : ScriptableObject
 		//Calculate are run acceleration & deceleration forces using formula: amount = ((1 / Time.fixedDeltaTime) * acceleration) / runMaxSpeed
 		runAccelAmount = (50 * runAcceleration) / runMaxSpeed;
 		runDeccelAmount = (50 * runDecceleration) / runMaxSpeed;
+
+		maxSprintSpeed = runMaxSpeed * sprintAccel;
 
 		//Calculate jumpForce using the formula (initialJumpVelocity = gravity * timeToJumpApex)
 		jumpForce = Mathf.Abs(gravityStrength) * jumpTimeToApex;

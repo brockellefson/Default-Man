@@ -17753,6 +17753,11 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 299455667710951860, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
   m_PrefabInstance: {fileID: 8711341412208704673}
   m_PrefabAsset: {fileID: 0}
+--- !u!70 &1544267401 stripped
+CapsuleCollider2D:
+  m_CorrespondingSourceObject: {fileID: 1919218843217313048, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
+  m_PrefabInstance: {fileID: 8711341412208704673}
+  m_PrefabAsset: {fileID: 0}
 --- !u!58 &1544267407
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -18249,6 +18254,14 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3857019981182598471, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
+      propertyPath: standingHitbox
+      value: 
+      objectReference: {fileID: 1544267401}
+    - target: {fileID: 3857019981182598471, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
+      propertyPath: crouchingHitbox
+      value: 
+      objectReference: {fileID: 1544267407}
     - target: {fileID: 3996720782822147529, guid: 8806d3872344c4fefbcd641a05c8402f, type: 3}
       propertyPath: m_Enabled
       value: 0

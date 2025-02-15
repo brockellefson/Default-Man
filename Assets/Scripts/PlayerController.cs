@@ -24,6 +24,16 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+        public bool isSprinting 
+    { 
+        get { return _isSprinting; }
+        private set 
+        {
+            _isSprinting = value;
+            animator.isSprinting = value;
+        }
+    }
+
     public bool IsRunning 
     { 
         get { return _isRunning;}
@@ -75,10 +85,12 @@ public class PlayerController : MonoBehaviour
     private bool _isCrouching = false;
     private bool _isSliding = false;
     private bool _isFacingRight = true;
+    private bool _isSprinting = false;
 
     private float coyoteTimeCounter;
     private float jumpBufferCounter;
-    private float crouchBufferCounter;
+    private bool crouchBuffer = false;
+    private bool standBuffer = false;
 
     void Awake()
     {
@@ -93,23 +105,27 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        playerCollider.IsCrouchingOrRolling((IsCrouching || IsSliding) && playerCollider.isGrounded);
         jumpBufferCounter -= Time.deltaTime;
 
         if(playerCollider.isGrounded){
+            playerCollider.IsCrouchingOrRolling(IsCrouching || IsSliding);
             coyoteTimeCounter = Data.coyoteTime;
         }
         else{
             coyoteTimeCounter -= Time.deltaTime;
         }
 
-        if(CanRollOrCrouch() && playerCollider.isGrounded)
-        {
-            CrouchOrRoll();
-        }
-
         if(CanJump()){
             Jump();
+        }
+
+        if(standBuffer && !playerCollider.isOnCeiling){
+            Stand();
+            standBuffer = false;
+        }
+
+        if(CanRollOrCrouch()){
+            CrouchOrRoll();
         }
 
 		if (IsJumping && RB.linearVelocityY < 0)
@@ -143,7 +159,14 @@ public class PlayerController : MonoBehaviour
             if(IsSliding){
                 IsSliding = false;
             }
+
+            ComeToHalt();
         }
+
+    }
+
+    public void ComeToHalt(){
+        animator.comeToHalt = true;
     }
 
     public void OnJump(InputAction.CallbackContext context) 
@@ -159,15 +182,15 @@ public class PlayerController : MonoBehaviour
     }
 
     public void OnCrouch(InputAction.CallbackContext context) 
-    {
-        if(context.started)
-        {
-            crouchBufferCounter = Data.crouchInputBufferTime;
-        }        
-        else if(context.canceled){
-            IsCrouching = false;
-            IsSliding = false;
+    {      
+        if(context.canceled && (IsCrouching || IsSliding)){
+            standBuffer = true;
+            crouchBuffer = false;
         }
+        else if(context.started)
+        {
+            crouchBuffer = true;
+        }  
     }
 
     private void SetDirection(Vector2 moveInput)
@@ -178,10 +201,16 @@ public class PlayerController : MonoBehaviour
 
         if(moveInput.x > 0 && !isFacingRight)
         {
+            if(IsRunning){
+
+            }
             isFacingRight = true;
         }
         else if(moveInput.x < 0 && isFacingRight)
         {
+            if(IsRunning){
+                
+            }
             isFacingRight = false;
         }
     }
@@ -233,7 +262,7 @@ private void Run(float lerpAmount)
     // Apply speed boost if running
     if (IsRunning)
     {
-        targetSpeed *= 1.3f;
+        targetSpeed *= Data.sprintAccel;
     }
 
     // Determine acceleration rate based on grounded or air state
@@ -262,6 +291,17 @@ private void Run(float lerpAmount)
 
     // Update the Rigidbody's velocity
     RB.linearVelocity = new Vector2(finalSpeed, RB.linearVelocityY);
+
+    if(Math.Abs(RB.linearVelocityX) >= Data.maxSprintSpeed * .99)
+    {
+        isSprinting = true;
+    }
+    else
+    {
+        isSprinting = false;
+    }
+
+    animator.SetXVelocity(RB.linearVelocityX);
 }
 
 
@@ -282,15 +322,20 @@ private void Run(float lerpAmount)
             IsCrouching = true;
         }
 
-            crouchBufferCounter = 0;
+            crouchBuffer = false;
+    }
+
+    public void Stand(){
+        IsCrouching = false;
+        IsSliding = false;
     }
 
     public bool CanJump()
     {
-        return coyoteTimeCounter > 0f && jumpBufferCounter > 0f && !IsSliding;
+        return coyoteTimeCounter > 0f && jumpBufferCounter > 0f && !IsSliding && !playerCollider.isOnCeiling;
     }
 
     public bool CanRollOrCrouch(){
-        return crouchBufferCounter > 0f;
+        return crouchBuffer && playerCollider.isGrounded;
     }
 }
