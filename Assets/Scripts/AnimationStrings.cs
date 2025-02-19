@@ -3,7 +3,7 @@ using UnityEngine;
 
 internal class AnimationStrings
 {
-    internal static string isMoving = "isMoving";
+    internal static string isWalking = "isWalking";
     internal static string isRunning = "isRunning";
     internal static string isSprinting = "isSprinting";
     internal static string isGrounded = "isGrounded";

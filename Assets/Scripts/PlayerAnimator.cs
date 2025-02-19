@@ -7,7 +7,7 @@ public class PlayerAnimator : MonoBehaviour
     public bool comeToHalt = false;
     public bool isRunning = false;
     public bool isSprinting = false;
-    public bool isMoving = false;
+    public bool isWalking = false;
     public bool isCrouching = false;
     public bool isSliding = false;
     public bool isGrounded = true;
@@ -35,7 +35,7 @@ public class PlayerAnimator : MonoBehaviour
     private void CheckAnimationState()
     {
         animator.SetBool(AnimationStrings.isRunning, isRunning);
-        animator.SetBool(AnimationStrings.isMoving, isMoving);
+        animator.SetBool(AnimationStrings.isWalking, isWalking);
         animator.SetBool(AnimationStrings.isCrouching, isCrouching);
         animator.SetBool(AnimationStrings.isSliding, isSliding);
         animator.SetBool(AnimationStrings.isGrounded, isGrounded);

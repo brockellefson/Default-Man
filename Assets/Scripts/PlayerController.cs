@@ -16,13 +16,13 @@ public class PlayerController : MonoBehaviour
     public Vector2 moveInput;
     public Vector2 lastMoveInput;
     
-    public bool IsMoving 
+    public bool IsWalking 
     { 
-        get { return _isMoving; }
+        get { return _isWalking; }
         private set 
         {
-            _isMoving = value;
-            animator.isMoving = value;
+            _isWalking = value;
+            animator.isWalking = value;
         }
     }
 
@@ -66,6 +66,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public bool TurnWhileSprinting 
+    { 
+        get { return _turnWhileSprinting;}
+        private set 
+        {
+            _turnWhileSprinting = value;
+        }
+    }
+
     public bool isFacingRight
     { 
         get { return _isFacingRight;}
@@ -85,7 +94,7 @@ public class PlayerController : MonoBehaviour
     public bool IsJumping = false;
     public bool Halt = false;
     [SerializeField]
-    private bool _isMoving = false;
+    private bool _isWalking = false;
     [SerializeField]
     private bool _isRunning = false;
     [SerializeField]
@@ -94,6 +103,8 @@ public class PlayerController : MonoBehaviour
     private bool _isSliding = false;
     [SerializeField]
     private bool _isSprinting = false;
+    [SerializeField]
+    private bool _turnWhileSprinting = false;
     private bool _isFacingRight = true;
 
 
@@ -101,7 +112,7 @@ public class PlayerController : MonoBehaviour
     private float jumpBufferCounter;
     private bool crouchBuffer = false;
     private bool standBuffer = false;
-
+    private float sprintSpeed;
     void Awake()
     {
         RB = GetComponent<Rigidbody2D>();
@@ -118,15 +129,6 @@ public class PlayerController : MonoBehaviour
         jumpBufferCounter -= Time.deltaTime;
 
 		moveInput.x = Input.GetAxisRaw("Horizontal");
-
-        if(IsRunning || IsSprinting){
-            if(isFacingRight){
-		        moveInput.x = 1;
-            }
-            else{
-                moveInput.x = -1;
-            }
-        }
         
         if(Halt){
 
@@ -135,10 +137,24 @@ public class PlayerController : MonoBehaviour
             if(Math.Abs(RB.linearVelocityX) <= 1f){
                 Halt = false;
                 animator.comeToHalt = false;
+                if(TurnWhileSprinting){
+
+                }
             }
         }
+        else if(IsRunning){
+            if(isFacingRight){
+		        moveInput.x = 1;
+            }
+            else{
+                moveInput.x = -1;
+            }
+        }
+        else if(IsSprinting){
+            SetDirectionWhileSprinting(moveInput);
+        }
         else{
-            OnMove();
+            OnWalk();
         }
 
         if(playerCollider.isGrounded){
@@ -174,9 +190,9 @@ public class PlayerController : MonoBehaviour
         SetGravity();
     }
 
-    public void OnMove() 
+    public void OnWalk() 
     {
-        IsMoving = moveInput.x != 0f;
+        IsWalking = moveInput.x != 0f;
         SetDirection(moveInput);
     }
 
@@ -185,6 +201,7 @@ public class PlayerController : MonoBehaviour
         if(context.started && !IsCrouching)
         {
             IsRunning = true;
+            IsWalking = false;
         }
         else if(context.canceled)
         {
@@ -202,11 +219,10 @@ public class PlayerController : MonoBehaviour
     }
 
     public void ComeToHalt(){
-        IsMoving = false;
+        IsWalking = false;
         IsSprinting = false;
         IsRunning = false;
         Halt = true;
-        animator.comeToHalt = true;
     }
 
     public void OnJump(InputAction.CallbackContext context) 
@@ -240,18 +256,28 @@ public class PlayerController : MonoBehaviour
         }
 
         if(moveInput.x > 0 && !isFacingRight)
-        {
-            if(IsSprinting){
-
-            }
+        {            
             isFacingRight = true;
         }
         else if(moveInput.x < 0 && isFacingRight)
         {
-            if(IsSprinting){
-                
-            }
-            isFacingRight = false;
+            isFacingRight = false;   
+        }
+    }
+
+    private void SetDirectionWhileSprinting(Vector2 moveInput)
+    {
+        if(IsSliding){
+            return;
+        }
+
+        if(moveInput.x > 0 && !isFacingRight)
+        {            
+            isFacingRight = true;
+        }
+        else if(moveInput.x < 0 && isFacingRight)
+        {
+            isFacingRight = false;   
         }
     }
 
@@ -300,7 +326,7 @@ private void Run(float lerpAmount)
     targetSpeed = Mathf.Lerp(RB.linearVelocityX, targetSpeed, lerpAmount);
 
     // Apply speed boost if running
-    if (IsRunning)
+    if (IsRunning || IsSprinting)
     {
         targetSpeed *= Data.sprintAccel;
     }
@@ -336,6 +362,7 @@ private void Run(float lerpAmount)
     if(Math.Abs(RB.linearVelocityX) >= Data.maxSprintSpeed * .99)
     {
         IsSprinting = true;
+        IsRunning = false;
     }
 
     animator.SetXVelocity(RB.linearVelocityX);
@@ -352,7 +379,7 @@ private void Run(float lerpAmount)
 
     public void CrouchOrRoll()
     {
-        if(IsRunning){
+        if(IsRunning || IsSprinting){
                 IsSliding = true;
             }
         else{
