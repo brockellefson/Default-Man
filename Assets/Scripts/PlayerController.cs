@@ -118,6 +118,7 @@ public class PlayerController : MonoBehaviour
     private bool crouchBuffer = false;
     private bool standBuffer = false;
     private float sprintSpeedBeforeHalt;
+    private float sprintDirectionBeforeHalt;
     void Awake()
     {
         RB = GetComponent<Rigidbody2D>();
@@ -255,6 +256,10 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
+        if(TurnWhileSprinting){
+            moveInput.x = sprintDirectionBeforeHalt;
+        }
+
         if(moveInput.x > 0 && !isFacingRight)
         {           
             isFacingRight = true;
@@ -271,11 +276,13 @@ public class PlayerController : MonoBehaviour
 
         if(moveInput.x > 0 && !isFacingRight)
         {            
+            sprintDirectionBeforeHalt = moveInput.x;
             TurnWhileSprinting = true;
             ComeToHalt();
         }
         else if(moveInput.x < 0 && isFacingRight)
         {
+            sprintDirectionBeforeHalt = moveInput.x;
             TurnWhileSprinting = true;
             ComeToHalt();
         }
