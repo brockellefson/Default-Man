@@ -43,20 +43,16 @@ public class PlayerAnimator : MonoBehaviour
         animator.SetBool(AnimationStrings.isOnCeiling, isOnCeiling);
         animator.SetBool(AnimationStrings.isSprinting, isSprinting);
         
-
-
         if (startedJumping)
         {
             animator.SetTrigger(AnimationStrings.jump);
             startedJumping = false;
-            return;
         }
 
         if (comeToHalt)
         {
             animator.SetTrigger(AnimationStrings.comeToHalt);
             comeToHalt = false;
-            return;
         }
     }
 

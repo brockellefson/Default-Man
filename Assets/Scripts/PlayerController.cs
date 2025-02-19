@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using Unity.Burst.Intrinsics;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using Unity.VisualScripting.Antlr3.Runtime.Tree;
@@ -13,7 +14,8 @@ public class PlayerController : MonoBehaviour
     public PlayerAnimator animator;
     public PlayerCollider playerCollider;
     public Vector2 moveInput;
-
+    public Vector2 lastMoveInput;
+    
     public bool IsMoving 
     { 
         get { return _isMoving; }
@@ -24,7 +26,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-        public bool isSprinting 
+    public bool IsSprinting 
     { 
         get { return _isSprinting; }
         private set 
@@ -78,14 +80,22 @@ public class PlayerController : MonoBehaviour
             _isFacingRight = value;
         }
     }
-
+	[Header("States")]
+    [SerializeField]
     public bool IsJumping = false;
+    public bool Halt = false;
+    [SerializeField]
     private bool _isMoving = false;
+    [SerializeField]
     private bool _isRunning = false;
+    [SerializeField]
     private bool _isCrouching = false;
+    [SerializeField]
     private bool _isSliding = false;
-    private bool _isFacingRight = true;
+    [SerializeField]
     private bool _isSprinting = false;
+    private bool _isFacingRight = true;
+
 
     private float coyoteTimeCounter;
     private float jumpBufferCounter;
@@ -106,6 +116,30 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         jumpBufferCounter -= Time.deltaTime;
+
+		moveInput.x = Input.GetAxisRaw("Horizontal");
+
+        if(IsRunning || IsSprinting){
+            if(isFacingRight){
+		        moveInput.x = 1;
+            }
+            else{
+                moveInput.x = -1;
+            }
+        }
+        
+        if(Halt){
+
+            moveInput.x = 0f;
+
+            if(Math.Abs(RB.linearVelocityX) <= 1f){
+                Halt = false;
+                animator.comeToHalt = false;
+            }
+        }
+        else{
+            OnMove();
+        }
 
         if(playerCollider.isGrounded){
             playerCollider.IsCrouchingOrRolling(IsCrouching || IsSliding);
@@ -140,32 +174,38 @@ public class PlayerController : MonoBehaviour
         SetGravity();
     }
 
-    public void OnMove(InputAction.CallbackContext context) 
+    public void OnMove() 
     {
-        moveInput = context.ReadValue<Vector2>();
         IsMoving = moveInput.x != 0f;
         SetDirection(moveInput);
     }
 
     public void OnRun(InputAction.CallbackContext context) 
     {
-        if(context.started && IsMoving && !IsCrouching)
+        if(context.started && !IsCrouching)
         {
             IsRunning = true;
         }
         else if(context.canceled)
         {
             IsRunning = false;
+
             if(IsSliding){
                 IsSliding = false;
             }
 
-            ComeToHalt();
+            if(IsSprinting){
+                ComeToHalt();
+            }
         }
 
     }
 
     public void ComeToHalt(){
+        IsMoving = false;
+        IsSprinting = false;
+        IsRunning = false;
+        Halt = true;
         animator.comeToHalt = true;
     }
 
@@ -201,14 +241,14 @@ public class PlayerController : MonoBehaviour
 
         if(moveInput.x > 0 && !isFacingRight)
         {
-            if(IsRunning){
+            if(IsSprinting){
 
             }
             isFacingRight = true;
         }
         else if(moveInput.x < 0 && isFacingRight)
         {
-            if(IsRunning){
+            if(IsSprinting){
                 
             }
             isFacingRight = false;
@@ -248,7 +288,7 @@ private void Run(float lerpAmount)
         return;
     }
 
-    if(moveInput.x == 0 && !IsRunning){
+    if(moveInput.x == 0 && !Halt){
             RB.linearVelocity = new Vector2(0, RB.linearVelocityY);
             return;
     }
@@ -267,7 +307,7 @@ private void Run(float lerpAmount)
 
     // Determine acceleration rate based on grounded or air state
     float accelRate;
-    accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? Data.runAccelAmount : Data.runDeccelAmount;
+    accelRate = (Mathf.Abs(targetSpeed) > 0.01f) && !Halt ? Data.runAccelAmount : Data.runDeccelAmount;
 
     // Apply jump hang modifiers if applicable
     if (IsJumping && Mathf.Abs(RB.linearVelocityY) < Data.jumpHangTimeThreshold)
@@ -283,10 +323,11 @@ private void Run(float lerpAmount)
     float accelerationForce = speedDif * accelRate;
     float movement = accelerationForce / RB.mass * Time.fixedDeltaTime;
     float finalSpeed = RB.linearVelocityX + movement;
+
     // Apply crouching modifier
     if (IsCrouching)
     {
-        finalSpeed *= .7f;
+        finalSpeed *= .9f;
     }
 
     // Update the Rigidbody's velocity
@@ -294,11 +335,7 @@ private void Run(float lerpAmount)
 
     if(Math.Abs(RB.linearVelocityX) >= Data.maxSprintSpeed * .99)
     {
-        isSprinting = true;
-    }
-    else
-    {
-        isSprinting = false;
+        IsSprinting = true;
     }
 
     animator.SetXVelocity(RB.linearVelocityX);
