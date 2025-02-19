@@ -4,6 +4,7 @@ using Unity.Burst.Intrinsics;
 using Unity.Mathematics;
 using Unity.VisualScripting;
 using Unity.VisualScripting.Antlr3.Runtime.Tree;
+using UnityEditor.ShaderGraph;
 using UnityEngine;
 using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.InputSystem;
@@ -80,9 +81,13 @@ public class PlayerController : MonoBehaviour
         get { return _isFacingRight;}
         private set {
             if(_isFacingRight != value){
-                if(IsRunning && !IsSliding){
+                if(TurnWhileSprinting){
+                    RB.linearVelocityX = sprintSpeedBeforeHalt * -1;
+                    TurnWhileSprinting = false;
+                    IsSprinting = true;
+                    IsWalking = false;
+                } 
 
-                }
                 transform.localScale *= new Vector2(-1,1);
             }
 
@@ -112,7 +117,7 @@ public class PlayerController : MonoBehaviour
     private float jumpBufferCounter;
     private bool crouchBuffer = false;
     private bool standBuffer = false;
-    private float sprintSpeed;
+    private float sprintSpeedBeforeHalt;
     void Awake()
     {
         RB = GetComponent<Rigidbody2D>();
@@ -131,15 +136,10 @@ public class PlayerController : MonoBehaviour
 		moveInput.x = Input.GetAxisRaw("Horizontal");
         
         if(Halt){
-
             moveInput.x = 0f;
 
-            if(Math.Abs(RB.linearVelocityX) <= 1f){
+            if(Math.Abs(RB.linearVelocityX) <= .5f){
                 Halt = false;
-                animator.comeToHalt = false;
-                if(TurnWhileSprinting){
-
-                }
             }
         }
         else if(IsRunning){
@@ -151,7 +151,7 @@ public class PlayerController : MonoBehaviour
             }
         }
         else if(IsSprinting){
-            SetDirectionWhileSprinting(moveInput);
+            SetDirectionWhileSprinting();
         }
         else{
             OnWalk();
@@ -256,7 +256,7 @@ public class PlayerController : MonoBehaviour
         }
 
         if(moveInput.x > 0 && !isFacingRight)
-        {            
+        {           
             isFacingRight = true;
         }
         else if(moveInput.x < 0 && isFacingRight)
@@ -265,19 +265,26 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void SetDirectionWhileSprinting(Vector2 moveInput)
+    private void SetDirectionWhileSprinting()
     {
-        if(IsSliding){
-            return;
-        }
+        sprintSpeedBeforeHalt = RB.linearVelocityX;
 
         if(moveInput.x > 0 && !isFacingRight)
         {            
-            isFacingRight = true;
+            TurnWhileSprinting = true;
+            ComeToHalt();
         }
         else if(moveInput.x < 0 && isFacingRight)
         {
-            isFacingRight = false;   
+            TurnWhileSprinting = true;
+            ComeToHalt();
+        }
+
+        if(isFacingRight){
+		    moveInput.x = 1;
+        }
+        else{
+            moveInput.x = -1;
         }
     }
 

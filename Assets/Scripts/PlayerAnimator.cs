@@ -4,7 +4,6 @@ public class PlayerAnimator : MonoBehaviour
 {
     private Animator animator;
     public bool startedJumping = false;
-    public bool comeToHalt = false;
     public bool isRunning = false;
     public bool isSprinting = false;
     public bool isWalking = false;
@@ -47,12 +46,6 @@ public class PlayerAnimator : MonoBehaviour
         {
             animator.SetTrigger(AnimationStrings.jump);
             startedJumping = false;
-        }
-
-        if (comeToHalt)
-        {
-            animator.SetTrigger(AnimationStrings.comeToHalt);
-            comeToHalt = false;
         }
     }
 

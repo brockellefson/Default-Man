@@ -15,5 +15,4 @@ internal class AnimationStrings
     internal static string isCrouching = "isCrouching";
     internal static string isSliding = "isSliding";
     internal static string isOnCeiling = "isOnCeiling";
-    internal static string comeToHalt = "comeToHalt";
 }
