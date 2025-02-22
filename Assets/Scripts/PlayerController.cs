@@ -123,10 +123,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private bool _turnWhileSprinting = false;
     private bool _isFacingRight = true;
-
-
+	[Header("Debug")]
+    [SerializeField]
+    private bool testState = false;
     private float coyoteTimeCounter;
     private float jumpBufferCounter;
+    private float wallJumpBufferCounter;
     private bool crouchBuffer = false;
     private bool standBuffer = false;
     private float sprintSpeedBeforeHalt;
@@ -145,7 +147,7 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         jumpBufferCounter -= Time.deltaTime;
-
+        wallJumpBufferCounter -= Time.deltaTime;
 		moveInput.x = Input.GetAxisRaw("Horizontal");
 
         
@@ -170,6 +172,10 @@ public class PlayerController : MonoBehaviour
             Jump();
         }
 
+        if(CanWallJump()){
+            WallJump();
+        }
+
         if(standBuffer && !playerCollider.isOnCeiling){
             Stand();
             standBuffer = false;
@@ -179,7 +185,7 @@ public class PlayerController : MonoBehaviour
             CrouchOrRoll();
         }
 
-		if (IsJumping && RB.linearVelocityY < 0)
+		if (IsJumping && (RB.linearVelocityY < 0 || IsWallRunning))
 		{
 			IsJumping = false;
 		}
@@ -244,7 +250,6 @@ public class PlayerController : MonoBehaviour
                 ComeToHalt();
             }
         }
-
     }
 
     public void ComeToHalt(){
@@ -255,7 +260,7 @@ public class PlayerController : MonoBehaviour
     }
 
     public void OnWallRun(){
-   
+        moveInput.x = 0;
         float targetSpeed = Data.wallRunMaxSpeed;
 
         targetSpeed = Mathf.Lerp(RB.linearVelocityY, targetSpeed, 1);
@@ -269,8 +274,6 @@ public class PlayerController : MonoBehaviour
         float movement = accelerationForce / RB.mass * Time.fixedDeltaTime;
         float finalSpeed = RB.linearVelocityY + movement;
 
-
-
         // Update the Rigidbody's velocity
         RB.linearVelocity = new Vector2(RB.linearVelocityX, finalSpeed);
         SetGravityScale(0);
@@ -281,6 +284,7 @@ public class PlayerController : MonoBehaviour
         if(context.started)
         {
             jumpBufferCounter = Data.jumpInputBufferTime;
+            wallJumpBufferCounter = Data.jumpInputBufferTime;
         }
         else if(context.canceled && RB.linearVelocityY > 0){
             RB.linearVelocity = new Vector2(RB.linearVelocityX, RB.linearVelocityY * .5f);
@@ -372,7 +376,7 @@ public class PlayerController : MonoBehaviour
         animator.SetYVelocity(RB.linearVelocityY);
     }
 
-private void Run(float lerpAmount)
+    private void Run(float lerpAmount)
 {
     if(IsSliding){
         return;
@@ -441,6 +445,14 @@ private void Run(float lerpAmount)
         jumpBufferCounter = 0;
     }
 
+    public void WallJump(){
+        animator.startedJumping = true;
+        IsJumping = true;
+        isFacingRight = !isFacingRight;
+        RB.linearVelocity = new Vector2(RB.linearVelocityX * 100, Data.jumpForce);  
+        wallJumpBufferCounter = 0;
+    }
+
     public void CrouchOrRoll()
     {
         if(IsRunning || IsSprinting){
@@ -461,6 +473,10 @@ private void Run(float lerpAmount)
     public bool CanJump()
     {
         return coyoteTimeCounter > 0f && jumpBufferCounter > 0f && !IsSliding && !playerCollider.isOnCeiling;
+    }
+
+    public bool CanWallJump(){
+        return wallJumpBufferCounter > 0f && IsWallRunning;
     }
 
     public bool CanRollOrCrouch(){
