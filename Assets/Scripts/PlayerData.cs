@@ -32,6 +32,12 @@ public class PlayerData : ScriptableObject
 	[Space(5)]
 	public bool doConserveMomentum = true;
 
+	[Space(20)]
+
+	[Header("Wall Run")]
+	public float wallRunMaxSpeed; //Target speed we want the player to reach.
+	public float wallRunAcceleration; //The speed at which our player accelerates to max speed, can be set to runMaxSpeed for instant acceleration down to 0 for none at all
+	[HideInInspector] public float wallRunAccelAmount; //The actual force (multiplied with speedDiff) applied to the player.
 
 	[Space(20)]
 
@@ -93,8 +99,10 @@ public class PlayerData : ScriptableObject
 		gravityScale = gravityStrength / Physics2D.gravity.y;
 
 		//Calculate are run acceleration & deceleration forces using formula: amount = ((1 / Time.fixedDeltaTime) * acceleration) / runMaxSpeed
-		runAccelAmount = (50 * runAcceleration) / runMaxSpeed;
-		runDeccelAmount = (50 * runDecceleration) / runMaxSpeed;
+		runAccelAmount = 50 * runAcceleration / runMaxSpeed;
+		runDeccelAmount = 50 * runDecceleration / runMaxSpeed;
+
+		wallRunAccelAmount = 50 * wallRunAcceleration / wallRunMaxSpeed;
 
 		maxSprintSpeed = runMaxSpeed * sprintAccel;
 

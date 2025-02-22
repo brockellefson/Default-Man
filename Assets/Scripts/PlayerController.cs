@@ -67,6 +67,16 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public bool IsWallRunning 
+    { 
+        get { return _isWallRunning;}
+        private set 
+        {
+            _isWallRunning = value;
+            animator.isWallRunning = value;
+        }
+    }
+
     public bool TurnWhileSprinting 
     { 
         get { return _turnWhileSprinting;}
@@ -103,6 +113,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private bool _isRunning = false;
     [SerializeField]
+    private bool _isWallRunning = false;
+    [SerializeField]
     private bool _isCrouching = false;
     [SerializeField]
     private bool _isSliding = false;
@@ -135,28 +147,16 @@ public class PlayerController : MonoBehaviour
         jumpBufferCounter -= Time.deltaTime;
 
 		moveInput.x = Input.GetAxisRaw("Horizontal");
-        
-        if(Halt){
-            moveInput.x = 0f;
 
-            if(Math.Abs(RB.linearVelocityX) <= .5f){
-                Halt = false;
-            }
-        }
-        else if(IsRunning){
-            if(isFacingRight){
-		        moveInput.x = 1;
-            }
-            else{
-                moveInput.x = -1;
-            }
-        }
-        else if(IsSprinting){
-            SetDirectionWhileSprinting();
+        
+        if(CanWallRun()){
+            IsWallRunning = true;
         }
         else{
-            OnWalk();
+            IsWallRunning = false;
         }
+
+        DetermineMovementState();
 
         if(playerCollider.isGrounded){
             playerCollider.IsCrouchingOrRolling(IsCrouching || IsSliding);
@@ -183,6 +183,34 @@ public class PlayerController : MonoBehaviour
 		{
 			IsJumping = false;
 		}
+    }
+
+    public void DetermineMovementState()
+    {
+        if(Halt){
+            moveInput.x = 0f;
+
+            if(Math.Abs(RB.linearVelocityX) <= .5f){
+                Halt = false;
+            }
+        }
+        else if(IsWallRunning){
+            OnWallRun();
+        }
+        else if(IsRunning){
+            if(isFacingRight){
+		        moveInput.x = 1;
+            }
+            else{
+                moveInput.x = -1;
+            }
+        }
+        else if(IsSprinting){
+            SetDirectionWhileSprinting();
+        }
+        else{
+            OnWalk();
+        }
     }
 
     void FixedUpdate()
@@ -224,6 +252,28 @@ public class PlayerController : MonoBehaviour
         IsSprinting = false;
         IsRunning = false;
         Halt = true;
+    }
+
+    public void OnWallRun(){
+   
+        float targetSpeed = Data.wallRunMaxSpeed;
+
+        targetSpeed = Mathf.Lerp(RB.linearVelocityY, targetSpeed, 1);
+
+        float accelRate;
+        accelRate = Data.wallRunAccelAmount;
+
+        float speedDif = targetSpeed - RB.linearVelocityY;
+
+        float accelerationForce = speedDif * accelRate;
+        float movement = accelerationForce / RB.mass * Time.fixedDeltaTime;
+        float finalSpeed = RB.linearVelocityY + movement;
+
+
+
+        // Update the Rigidbody's velocity
+        RB.linearVelocity = new Vector2(RB.linearVelocityX, finalSpeed);
+        SetGravityScale(0);
     }
 
     public void OnJump(InputAction.CallbackContext context) 
@@ -415,5 +465,9 @@ private void Run(float lerpAmount)
 
     public bool CanRollOrCrouch(){
         return crouchBuffer && playerCollider.isGrounded;
+    }
+
+    public bool CanWallRun(){
+        return (IsRunning || IsSprinting) && playerCollider.isOnWall && !playerCollider.isGrounded;
     }
 }

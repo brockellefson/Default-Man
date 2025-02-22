@@ -9,6 +9,7 @@ public class PlayerAnimator : MonoBehaviour
     public bool isWalking = false;
     public bool isCrouching = false;
     public bool isSliding = false;
+    public bool isWallRunning = false;
     public bool isGrounded = true;
     public bool isOnWall = false;
     public bool isOnCeiling = false;
@@ -41,6 +42,8 @@ public class PlayerAnimator : MonoBehaviour
         animator.SetBool(AnimationStrings.isOnWall, isOnWall);
         animator.SetBool(AnimationStrings.isOnCeiling, isOnCeiling);
         animator.SetBool(AnimationStrings.isSprinting, isSprinting);
+        animator.SetBool(AnimationStrings.isWallRunning, isWallRunning);
+
         
         if (startedJumping)
         {

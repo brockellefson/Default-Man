@@ -28,6 +28,9 @@ MonoBehaviour:
   accelInAir: 0.656
   deccelInAir: 0.662
   doConserveMomentum: 1
+  wallRunMaxSpeed: 3
+  wallRunAcceleration: 1
+  wallRunAccelAmount: 16.666666
   jumpHeight: 2.5
   jumpTimeToApex: 0.3
   jumpForce: 16.666666
